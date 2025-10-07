@@ -1,5 +1,5 @@
 from .database_utils import get_connection
-from .author imprt Author
+from .author import Author
 from .magazine import Magazine
 
 # initialize new article instance
@@ -18,7 +18,7 @@ class Article:
     # getter for articles title
     @property
     def title(self):
-        return self._article
+        return self._title
     # setter for articles title with validation
     @title.setter
     def title(self,value):
@@ -46,7 +46,7 @@ class Article:
 
     # class method to create an article
     @classmethod
-    def new_from _db(cls,row):
+    def new_from_db(cls,row):
         # check if row has been returned
         if row is None:
             return None
@@ -64,17 +64,29 @@ class Article:
         #create and return new article instance
         return cls(title=title, author=author, magazine=magazine, id=article_id)
 
-    #class method to find an aarticle by their id
+    #class method to find an article by their id
     @classmethod
     def find_by_id(cls,id):
+        conn=get_connection()
+        cursor=conn.cursor()
+        # execute a select query to find the article by id
+        cursor.execute("SELECT * FROM articles WHERE id=?", (id,))
+        # fetch the first row from the result that matches
+        row = cursor.fetchone()
+        # close the connection
+        conn.close()
+        # create and return an article instance from the row
+        return cls.new_from_db(row)
+
+    # instance method to save the article to the db
+    def save(self):
         conn=get_connection()
         cursor=conn.cursor()
         #check if the article already exists in the db
         if self._id is None:
             #insert article into the db since it does not exist
-            cursor.execute("INSERT INTO articles
-                 (title, author_id, magazine_id)
-                 VALUES (?,?,?)", (self._title, self._author.id, self._magazine.id))
+            cursor.execute("INSERT INTO articles (title, author_id, magazine_id) VALUES (?,?,?)", 
+                         (self._title, self._author.id, self._magazine.id))
             #get the id of the newly inserted article
             self._id=cursor.lastrowid
             print(f'created new article with ID: {self._id}')

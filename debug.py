@@ -1,6 +1,7 @@
 from lib.database_utils import create_tables, get_connection
 from lib.author import Author
 from lib.magazine import Magazine
+from lib.article import Article
 
 def test_database():
     print('=== Testing Database ===')
@@ -17,7 +18,7 @@ def test_author():
     print('\n=== Testing Author Class ===')
     
 # Test creating a new author
-    author1 = Author("John Doe")
+    author1 = Author("Elijah Kamanga")
     print(f'Before save: {author1}')
     
 # Test saving to database
@@ -77,7 +78,55 @@ def test_magazine():
     except ValueError as e:
         print(f'✅ Category validation works: {e}')
 
+def test_article():
+    print('\n=== Testing Article Class ===')
+    
+    # First create author and magazine for the article
+    author = Author("Alice Johnson")
+    author.save()
+    
+    magazine = Magazine("Science Weekly", "Science")
+    magazine.save()
+    
+    # Test creating a new article
+    article1 = Article("Python in today's world", author, magazine)
+    print(f'Before save: {article1}')
+    
+    # Test saving to database
+    article1.save()
+    print(f'After save: {article1}')
+    
+    # Test finding by ID
+    found_article = Article.find_by_id(article1.id)
+    print(f'Found article: {found_article}')
+    
+    # Test creating another article with same author, different magazine
+    magazine2 = Magazine("Tech News", "Technology")
+    magazine2.save()
+    
+    article2 = Article("Python Tips", author, magazine2)
+    article2.save()
+    print(f'Second article: {article2}')
+    
+    # Test article properties
+    print(f'Article title: {article1.title}')
+    print(f'Article author: {article1.author.name}')
+    print(f'Article magazine: {article1.magazine.name}')
+    
+    # Test validation - empty title should fail
+    try:
+        invalid_article = Article("", author, magazine)
+    except ValueError as e:
+        print(f'✅ Title validation works: {e}')
+    
+    # Test read-only title
+    try:
+        article1.title = "New Title"
+    except AttributeError as e:
+        print(f'✅ Title is read-only: {e}')
+
 if __name__=='__main__':
     test_database()
     test_author()
     test_magazine()
+    test_article()
