@@ -100,7 +100,35 @@ class Magazine:
         # commit the changes and close the connection
         conn.commit()
         conn.close()
-    
+
+    # relationship method to get all the articles in this magazine
+    def articles(self):
+        conn=get_connection()
+        cursor=conn.cursor()
+        # find all articles where the magazine id matches this magazine id
+        cursor.execute("SELECT * FROM articles WHERE magazine_id=?", (self._id,))
+        #get all matching rows
+        rows=cursor.fetchall()
+        conn.close()
+        #convert rows to article objects and return them
+        from .article import Article
+        return [Article.new_from_db(row) for row in rows]
+
+    #relationship method to get all the authors that have written for this magazine
+    def contributors(self):
+        conn=get_connection()
+        cursor=conn.cursor()
+        # find all authors that have written articles for this magazine using a join query
+        cursor.execute('''
+            SELECT DISTINCT a.id, a.name FROM authors a
+            JOIN articles ar ON a.id = ar.author_id
+            WHERE ar.magazine_id=?
+        ''', (self._id,))
+        rows=cursor.fetchall() # get all matching rows
+        conn.close()
+        # convert rows to author objects and return them
+        from .author import Author
+        return [Author.new_from_db(row) for row in rows]
     # string representation of the magazine for debugging and printing
     def __repr__(self):
         return f'<Magazine id={self._id} name={self._name} category={self._category}>'
