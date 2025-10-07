@@ -88,6 +88,36 @@ class Author:
 # commit the changes and close the connection
         conn.commit()
         conn.close()
+
+# the relationship method to get all the articles by this author
+    def articles(self):
+        conn=get_connection()
+        cursor=conn.cursor()
+# find all articles where the author id matches this author id
+        cursor.execute("SELECT * FROM articles WHERE author_id=?", (self._id,))
+        rows=cursor.fetchall() # get all matching rows
+        conn.close()
+
+# convert rows to article objects and return them
+        from .article import Article
+        return [Article.new_from_db(row) for row in rows]
+
+    # relationship method to get all the magazines this author has written for
+    def magazines(self):
+        conn=get_connection()
+        cursor=conn.cursor()
+        # usage of join to get all magazines that have articles by this author and DISTINCT to remove duplicates
+        cursor.execute('''
+            SELECT DISTINCT m.* FROM magazines m
+            JOIN articles a ON m.id = a.magazine_id
+            WHERE a.author_id=?
+        ''', (self._id,))
+        # fetch all matching rows
+        rows=cursor.fetchall()
+        conn.close()
+        # convert rows to magazine objects and return them
+        from .magazine import Magazine
+        return [Magazine.new_from_db(row) for row in rows]
     
 # string rep of the author for debugging and printing
     def __repr__(self):
