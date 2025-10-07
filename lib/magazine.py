@@ -129,6 +129,36 @@ class Magazine:
         # convert rows to author objects and return them
         from .author import Author
         return [Author.new_from_db(row) for row in rows]
+    
+    # method to get all article titles in this magazine
+    def article_titles(self):
+        conn = get_connection()
+        cursor = conn.cursor()
+        # select only titles from articles in this magazine
+        cursor.execute("SELECT title FROM articles WHERE magazine_id=?", (self._id,))
+        # get all matching rows
+        rows = cursor.fetchall()
+        conn.close()
+        # extract titles from rows
+        return [row[0] for row in rows]
+
+    # method to get authors who wrote more than 2 articles for this magazine
+    def contributing_authors(self):
+        conn = get_connection()
+        cursor = conn.cursor()
+        # use GROUP BY and HAVING to find authors with more than 2 articles in this magazine
+        cursor.execute('''
+            SELECT a.id, a.name FROM authors a
+            JOIN articles ar ON a.id = ar.author_id
+            WHERE ar.magazine_id=?
+            GROUP BY a.id
+            HAVING COUNT(ar.id) > 2
+        ''', (self._id,))
+        rows = cursor.fetchall()  # get all matching rows
+        conn.close()
+        # convert rows to author objects and return them
+        from .author import Author
+        return [Author.new_from_db(row) for row in rows]
     # string representation of the magazine for debugging and printing
     def __repr__(self):
         return f'<Magazine id={self._id} name={self._name} category={self._category}>'

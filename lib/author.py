@@ -119,6 +119,27 @@ class Author:
         from .magazine import Magazine
         return [Magazine.new_from_db(row) for row in rows]
     
+    # method to create a new article for this author
+    def add_article(self, title, magazine):
+        from .article import Article
+        # create a new article instance with this author and the given magazine
+        new_article = Article(title=title, author=self, magazine=magazine)
+        # save the new article to the db
+        new_article.save()
+        # return the newly created article
+        return new_article
+    
+    # method to get unique categories of magazines this author has written for
+    def topic_areas(self):
+        # get all magazines this author has written for
+        author_magazines = self.magazines()
+        # extract unique categories from the magazines
+        categories = []
+        for magazine in author_magazines:
+            if magazine.category not in categories:
+                categories.append(magazine.category)
+        # return list of unique categories
+        return categories
 # string rep of the author for debugging and printing
     def __repr__(self):
         return f'<Author id={self._id} name={self._name}>'
