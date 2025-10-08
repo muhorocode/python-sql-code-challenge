@@ -34,4 +34,4 @@ Python project for managing authors, magazines, and articles using raw SQL (no S
 - `lib/magazine.py` - Magazine class  
 - `lib/article.py` - Article class (completed)
 - `debug.py` - For testing classes
-- `tests/test_all.py` - Test suite
+- `tests/test_all.py` - Pytest Test suite
